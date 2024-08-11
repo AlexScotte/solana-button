@@ -1488,6 +1488,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
 
 [[package]]
+name = "solana-button"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
+
+[[package]]
 name = "solana-frozen-abi"
 version = "1.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1630,13 +1637,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.51",
-]
-
-[[package]]
-name = "solana-button"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
 ]
 
 [[package]]
