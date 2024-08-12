@@ -14,19 +14,63 @@ export type SolanaButton = {
   },
   "instructions": [
     {
-      "name": "greet",
+      "name": "createNewGame",
       "discriminator": [
-        203,
-        194,
-        3,
-        150,
-        228,
-        58,
-        181,
-        62
+        125,
+        123,
+        146,
+        199,
+        15,
+        252,
+        11,
+        68
       ],
-      "accounts": [],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
       "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "gameState",
+      "discriminator": [
+        144,
+        94,
+        208,
+        172,
+        248,
+        99,
+        134,
+        120
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "gameState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lastUser",
+            "type": "pubkey"
+          }
+        ]
+      }
     }
   ]
 };
