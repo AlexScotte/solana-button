@@ -27,12 +27,92 @@ export type SolanaButton = {
       ],
       "accounts": [
         {
-          "name": "state",
+          "name": "globalState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "gameState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  97,
+                  109,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "global_state.next_game_id",
+                "account": "globalState"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user",
           "writable": true,
           "signer": true
         },
         {
-          "name": "user",
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initializeGlobalState",
+      "discriminator": [
+        232,
+        254,
+        209,
+        244,
+        123,
+        89,
+        154,
+        207
+      ],
+      "accounts": [
+        {
+          "name": "globalState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  108,
+                  111,
+                  98,
+                  97,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
           "writable": true,
           "signer": true
         },
@@ -57,6 +137,31 @@ export type SolanaButton = {
         134,
         120
       ]
+    },
+    {
+      "name": "globalState",
+      "discriminator": [
+        163,
+        46,
+        74,
+        168,
+        216,
+        123,
+        133,
+        98
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "unauthorized",
+      "msg": "unauthorized"
+    },
+    {
+      "code": 6001,
+      "name": "gameAlreadyActive",
+      "msg": "A game is already active"
     }
   ],
   "types": [
@@ -68,6 +173,32 @@ export type SolanaButton = {
           {
             "name": "lastUser",
             "type": "pubkey"
+          },
+          {
+            "name": "gameId",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "globalState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "nextGameId",
+            "type": "u64"
+          },
+          {
+            "name": "activeGameId",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
