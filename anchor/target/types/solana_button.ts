@@ -14,6 +14,44 @@ export type SolanaButton = {
   },
   "instructions": [
     {
+      "name": "clickButton",
+      "discriminator": [
+        50,
+        74,
+        85,
+        148,
+        119,
+        56,
+        246,
+        125
+      ],
+      "accounts": [
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "gameState",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "createNewGame",
       "discriminator": [
         125,
@@ -68,6 +106,29 @@ export type SolanaButton = {
           }
         },
         {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "global_state.next_game_id",
+                "account": "globalState"
+              }
+            ]
+          }
+        },
+        {
           "name": "user",
           "writable": true,
           "signer": true
@@ -77,7 +138,12 @@ export type SolanaButton = {
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "depositAmount",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "initializeGlobalState",
@@ -112,7 +178,7 @@ export type SolanaButton = {
           }
         },
         {
-          "name": "admin",
+          "name": "authority",
           "writable": true,
           "signer": true
         },
@@ -150,18 +216,36 @@ export type SolanaButton = {
         133,
         98
       ]
+    },
+    {
+      "name": "vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "unauthorized",
-      "msg": "unauthorized"
+      "name": "incorrectDepositAmount",
+      "msg": "Incorrect deposit amount"
     },
     {
       "code": 6001,
-      "name": "gameAlreadyActive",
-      "msg": "A game is already active"
+      "name": "gameNotActive",
+      "msg": "Game not active"
+    },
+    {
+      "code": 6002,
+      "name": "alreadyLastClicker",
+      "msg": "Already the last clicker"
     }
   ],
   "types": [
@@ -171,12 +255,20 @@ export type SolanaButton = {
         "kind": "struct",
         "fields": [
           {
-            "name": "lastUser",
+            "name": "lastClicker",
             "type": "pubkey"
           },
           {
             "name": "gameId",
             "type": "u64"
+          },
+          {
+            "name": "clickNumber",
+            "type": "u64"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
           }
         ]
       }
@@ -187,7 +279,7 @@ export type SolanaButton = {
         "kind": "struct",
         "fields": [
           {
-            "name": "admin",
+            "name": "authority",
             "type": "pubkey"
           },
           {
@@ -199,6 +291,26 @@ export type SolanaButton = {
             "type": {
               "option": "u64"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "balance",
+            "type": "u64"
+          },
+          {
+            "name": "depositAmount",
+            "type": "u64"
           }
         ]
       }

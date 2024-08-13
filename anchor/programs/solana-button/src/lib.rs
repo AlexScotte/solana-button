@@ -14,7 +14,11 @@ pub mod solana_button {
         initialize_global_state::initialize_global_state(ctx)
     }
 
-    pub fn create_new_game(ctx: Context<CreateNewGameData>) -> Result<()> {
-        create_new_game::create_new_game(ctx)
+    pub fn create_new_game(ctx: Context<CreateNewGameData>, deposit_amount: u64) -> Result<()> {
+        create_new_game::create_new_game(ctx, deposit_amount)
+    }
+
+    pub fn click_button(ctx: Context<ClickButtonData>, amount: u64) -> Result<()> {
+        click_button::click_button(ctx, amount)
     }
 }
