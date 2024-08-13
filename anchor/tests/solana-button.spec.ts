@@ -5,10 +5,12 @@ const { SystemProgram } = anchor.web3;
 
 describe('solana-button', () => {
 
-  const DEPOSIT_AMOUNT = 1 * anchor.web3.LAMPORTS_PER_SOL;
   const SEED_GLOBAL = "global";
   const SEED_GAME = "game";
   const SEED_VAULT = "vault";
+  const DEPOSIT_AMOUNT: number = 1 * anchor.web3.LAMPORTS_PER_SOL;
+  // const GAME_TIME_SEC = 24 * 60 * 60;
+  const GAME_TIME_SEC: number = 1 * 60;
 
   let globalStatePda: anchor.web3.PublicKey;
   let currentGameStatePda: anchor.web3.PublicKey;
@@ -29,7 +31,7 @@ describe('solana-button', () => {
   const ADMIN_PUBKEY: anchor.web3.PublicKey = provider.wallet.publicKey;
   const USER_1 = anchor.web3.Keypair.generate();
   const USER_2 = anchor.web3.Keypair.generate();
-
+  const USER_W_NO_MONEY = anchor.web3.Keypair.generate();
 
   const program = anchor.workspace.SolanaButton as anchor.Program<SolanaButton>;
   console.log("Program ID: ", program.programId.toBase58());
@@ -111,7 +113,10 @@ describe('solana-button', () => {
 
       // Execute the create_new_game instruction as admin.
       await program.methods
-        .createNewGame(new anchor.BN(DEPOSIT_AMOUNT))
+        .createNewGame(
+          new anchor.BN(DEPOSIT_AMOUNT),
+          new anchor.BN(GAME_TIME_SEC)
+        )
         .accounts({
           globalState: globalStatePda,
           gameState: currentGameStatePda,
@@ -145,11 +150,32 @@ describe('solana-button', () => {
       expect(gameStateAccount.isActive).toBe(true);
     });
 
+    it('Should game state new game not be ended', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(!gameStateAccount.hasEnded);
+    });
+
     it('Should game state last user not be initialized', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.lastClicker.toBase58()).toBe(SystemProgram.programId.toBase58());
+    });
+
+    it('Should game state time in second be equal to the configured value', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.gameTimeSec.toNumber()).toBe(GAME_TIME_SEC);
+    });
+
+    it('Should game state time in second be equal to the configured value', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.gameTimeSec.toNumber()).toBe(GAME_TIME_SEC);
     });
 
     it('Should global state next game id be set to 1', async () => {
@@ -181,7 +207,10 @@ describe('solana-button', () => {
       // Attempt to create a new game with a non-admin user
       await expect(
         program.methods
-          .createNewGame(new anchor.BN(DEPOSIT_AMOUNT))
+          .createNewGame(
+            new anchor.BN(DEPOSIT_AMOUNT),
+            new anchor.BN(GAME_TIME_SEC)
+          )
           .accounts({
             globalState: globalStatePda,
             gameState: newGameStateAccount,
@@ -209,7 +238,10 @@ describe('solana-button', () => {
       // Attempt to create a new game
       await expect(
         program.methods
-          .createNewGame(new anchor.BN(DEPOSIT_AMOUNT))
+          .createNewGame(
+            new anchor.BN(DEPOSIT_AMOUNT),
+            new anchor.BN(GAME_TIME_SEC)
+          )
           .accounts({
             globalState: globalStatePda,
             gameState: newGameStateAccount,
@@ -243,7 +275,6 @@ describe('solana-button', () => {
     });
   });
 
-
   describe('Should User cannot click on button', () => {
 
     it('Should User cannot click button if deposit amount is incorrect', async () => {
@@ -252,8 +283,9 @@ describe('solana-button', () => {
         program.methods
           .clickButton(new anchor.BN(99))
           .accounts({
-            vault: currentVaultPda,
+            globalState: globalStatePda,
             gameState: currentGameStatePda,
+            vault: currentVaultPda,
             user: USER_1.publicKey,
 
             systemProgram: anchor.web3.SystemProgram.programId,
@@ -279,8 +311,9 @@ describe('solana-button', () => {
         program.methods
           .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
           .accounts({
-            vault: newVaultPda,
+            globalState: globalStatePda,
             gameState: newGameStateAccount,
+            vault: newVaultPda,
             user: USER_1.publicKey,
 
             systemProgram: anchor.web3.SystemProgram.programId,
@@ -288,6 +321,24 @@ describe('solana-button', () => {
           .signers([USER_1])
           .rpc()
       ).rejects.toThrow(/AccountNotInitialized./);
+    });
+
+    it('Should User cannot click button if there is not enough money', async () => {
+
+      await expect(
+        program.methods
+          .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
+          .accounts({
+            globalState: globalStatePda,
+            gameState: currentGameStatePda,
+            vault: currentVaultPda,
+            user: USER_W_NO_MONEY.publicKey,
+
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([USER_W_NO_MONEY])
+          .rpc()
+      ).rejects.toThrow(/InsufficientFunds/);
     });
   });
 
@@ -304,8 +355,9 @@ describe('solana-button', () => {
       await program.methods
         .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
         .accounts({
-          vault: currentVaultPda,
+          globalState: globalStatePda,
           gameState: currentGameStatePda,
+          vault: currentVaultPda,
           user: USER_1.publicKey,
 
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -328,6 +380,13 @@ describe('solana-button', () => {
       expect(gameStateAccount.lastClicker.toBase58()).toBe(USER_1.publicKey.toBase58());
     });
 
+    it('Should game state click number must be equal to 1', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.clickNumber.toNumber()).toBe(1);
+    });
+
     it('Should user 1 balance be decreased by deposit amount', async () => {
 
       const userBalance = await provider.connection.getBalance(USER_1.publicKey);
@@ -341,8 +400,9 @@ describe('solana-button', () => {
         program.methods
           .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
           .accounts({
-            vault: currentVaultPda,
+            globalState: globalStatePda,
             gameState: currentGameStatePda,
+            vault: currentVaultPda,
             user: USER_1.publicKey,
 
             systemProgram: anchor.web3.SystemProgram.programId,
@@ -351,6 +411,7 @@ describe('solana-button', () => {
           .rpc()
       ).rejects.toThrow(/AlreadyLastClicker/);
     });
+
   });
 
   describe('Should another User 2 can click on button', () => {
@@ -366,8 +427,9 @@ describe('solana-button', () => {
       await program.methods
         .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
         .accounts({
-          vault: currentVaultPda,
+          globalState: globalStatePda,
           gameState: currentGameStatePda,
+          vault: currentVaultPda,
           user: USER_2.publicKey,
 
           systemProgram: anchor.web3.SystemProgram.programId,
@@ -390,6 +452,13 @@ describe('solana-button', () => {
       expect(gameStateAccount.lastClicker.toBase58()).toBe(USER_2.publicKey.toBase58());
     });
 
+    it('Should game state click number must be equal to 2', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.clickNumber.toNumber()).toBe(2);
+    });
+
     it('Should user 2 balance be decreased by deposit amount', async () => {
 
       const userBalance = await provider.connection.getBalance(USER_2.publicKey);
@@ -403,8 +472,9 @@ describe('solana-button', () => {
         program.methods
           .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
           .accounts({
-            vault: currentVaultPda,
+            globalState: globalStatePda,
             gameState: currentGameStatePda,
+            vault: currentVaultPda,
             user: USER_2.publicKey,
 
             systemProgram: anchor.web3.SystemProgram.programId,

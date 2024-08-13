@@ -8,6 +8,43 @@
   },
   "instructions": [
     {
+      "name": "claim_reward",
+      "discriminator": [
+        149,
+        95,
+        181,
+        242,
+        94,
+        90,
+        158,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "global_state",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "game_state",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "click_button",
       "discriminator": [
         50,
@@ -21,11 +58,15 @@
       ],
       "accounts": [
         {
-          "name": "vault",
+          "name": "global_state",
           "writable": true
         },
         {
           "name": "game_state",
+          "writable": true
+        },
+        {
+          "name": "vault",
           "writable": true
         },
         {
@@ -136,6 +177,10 @@
         {
           "name": "deposit_amount",
           "type": "u64"
+        },
+        {
+          "name": "game_time_sec",
+          "type": "i64"
         }
       ]
     },
@@ -179,6 +224,30 @@
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "verify_game_state",
+      "discriminator": [
+        246,
+        86,
+        135,
+        195,
+        12,
+        39,
+        128,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "game_state",
+          "writable": true
+        },
+        {
+          "name": "global_state",
+          "writable": true
         }
       ],
       "args": []
@@ -228,18 +297,18 @@
   "errors": [
     {
       "code": 6000,
-      "name": "IncorrectDepositAmount",
-      "msg": "Incorrect deposit amount"
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
     },
     {
       "code": 6001,
-      "name": "GameNotActive",
-      "msg": "Game not active"
+      "name": "GameAlreadyActive",
+      "msg": "A game is already active"
     },
     {
       "code": 6002,
-      "name": "AlreadyLastClicker",
-      "msg": "Already the last clicker"
+      "name": "IncorrectGameTimeValue",
+      "msg": "Incorrect game time value"
     }
   ],
   "types": [
@@ -263,6 +332,20 @@
           {
             "name": "is_active",
             "type": "bool"
+          },
+          {
+            "name": "has_ended",
+            "type": "bool"
+          },
+          {
+            "name": "last_click_timestamp",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "game_time_sec",
+            "type": "i64"
           }
         ]
       }

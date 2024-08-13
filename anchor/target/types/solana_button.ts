@@ -14,6 +14,43 @@ export type SolanaButton = {
   },
   "instructions": [
     {
+      "name": "claimReward",
+      "discriminator": [
+        149,
+        95,
+        181,
+        242,
+        94,
+        90,
+        158,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "globalState",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "gameState",
+          "writable": true
+        },
+        {
+          "name": "user",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "clickButton",
       "discriminator": [
         50,
@@ -27,11 +64,15 @@ export type SolanaButton = {
       ],
       "accounts": [
         {
-          "name": "vault",
+          "name": "globalState",
           "writable": true
         },
         {
           "name": "gameState",
+          "writable": true
+        },
+        {
+          "name": "vault",
           "writable": true
         },
         {
@@ -142,6 +183,10 @@ export type SolanaButton = {
         {
           "name": "depositAmount",
           "type": "u64"
+        },
+        {
+          "name": "gameTimeSec",
+          "type": "i64"
         }
       ]
     },
@@ -185,6 +230,30 @@ export type SolanaButton = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "verifyGameState",
+      "discriminator": [
+        246,
+        86,
+        135,
+        195,
+        12,
+        39,
+        128,
+        55
+      ],
+      "accounts": [
+        {
+          "name": "gameState",
+          "writable": true
+        },
+        {
+          "name": "globalState",
+          "writable": true
         }
       ],
       "args": []
@@ -234,18 +303,18 @@ export type SolanaButton = {
   "errors": [
     {
       "code": 6000,
-      "name": "incorrectDepositAmount",
-      "msg": "Incorrect deposit amount"
+      "name": "unauthorized",
+      "msg": "unauthorized"
     },
     {
       "code": 6001,
-      "name": "gameNotActive",
-      "msg": "Game not active"
+      "name": "gameAlreadyActive",
+      "msg": "A game is already active"
     },
     {
       "code": 6002,
-      "name": "alreadyLastClicker",
-      "msg": "Already the last clicker"
+      "name": "incorrectGameTimeValue",
+      "msg": "Incorrect game time value"
     }
   ],
   "types": [
@@ -269,6 +338,20 @@ export type SolanaButton = {
           {
             "name": "isActive",
             "type": "bool"
+          },
+          {
+            "name": "hasEnded",
+            "type": "bool"
+          },
+          {
+            "name": "lastClickTimestamp",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "gameTimeSec",
+            "type": "i64"
           }
         ]
       }
