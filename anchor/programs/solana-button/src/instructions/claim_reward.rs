@@ -8,7 +8,6 @@ use crate::Vault;
 pub fn claim_reward(ctx: Context<ClaimRewardData>) -> Result<()> {
     let vault = &mut ctx.accounts.vault;
     let game_state = &mut ctx.accounts.game_state;
-    let global_state = &mut ctx.accounts.global_state;
 
     // Should game be active
     require!(game_state.has_ended, ClaimRewardError::GameNotEnded);
@@ -29,25 +28,17 @@ pub fn claim_reward(ctx: Context<ClaimRewardData>) -> Result<()> {
     // Update vault
     vault.balance = 0;
 
-    // Update game state
-    game_state.is_active = false;
-
-    // Update global state
-    global_state.active_game_id = None;
-
     Ok(())
 }
 
 #[derive(Accounts)]
 pub struct ClaimRewardData<'info> {
+    
     #[account(mut)]
-    pub global_state: Account<'info, GlobalState>,
+    pub game_state: Account<'info, GameState>,
 
     #[account(mut)]
     pub vault: Account<'info, Vault>,
-
-    #[account(mut)]
-    pub game_state: Account<'info, GameState>,
 
     #[account(mut)]
     pub user: Signer<'info>,

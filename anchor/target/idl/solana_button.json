@@ -21,15 +21,11 @@
       ],
       "accounts": [
         {
-          "name": "global_state",
+          "name": "game_state",
           "writable": true
         },
         {
           "name": "vault",
-          "writable": true
-        },
-        {
-          "name": "game_state",
           "writable": true
         },
         {
@@ -297,18 +293,28 @@
   "errors": [
     {
       "code": 6000,
-      "name": "Unauthorized",
-      "msg": "Unauthorized"
+      "name": "IncorrectDepositAmount",
+      "msg": "Incorrect deposit amount"
     },
     {
       "code": 6001,
-      "name": "GameAlreadyActive",
-      "msg": "A game is already active"
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds in user account"
     },
     {
       "code": 6002,
-      "name": "IncorrectGameTimeValue",
-      "msg": "Incorrect game time value"
+      "name": "GameNotActive",
+      "msg": "Game not active"
+    },
+    {
+      "code": 6003,
+      "name": "AlreadyLastClicker",
+      "msg": "Already the last clicker"
+    },
+    {
+      "code": 6004,
+      "name": "GameEnded",
+      "msg": "Game has ended"
     }
   ],
   "types": [

@@ -31,6 +31,7 @@ pub fn click_button(ctx: Context<ClickButtonData>, amount: u64) -> Result<()> {
     // Update game state
     let game_state = &mut ctx.accounts.game_state;
     game_state.last_clicker = *ctx.accounts.user.key;
+    game_state.last_click_timestamp = Some(clock.unix_timestamp);
     game_state.click_number += 1;
 
     // Transfer SOL from USER account to VAULT

@@ -1,7 +1,5 @@
 import * as anchor from '@coral-xyz/anchor';
 import { SolanaButton } from '../target/types/solana_button';
-const { SystemProgram } = anchor.web3;
-
 
 describe('solana-button', () => {
 
@@ -10,7 +8,7 @@ describe('solana-button', () => {
   const SEED_VAULT = "vault";
   const DEPOSIT_AMOUNT: number = 1 * anchor.web3.LAMPORTS_PER_SOL;
   // const GAME_TIME_SEC = 24 * 60 * 60;
-  const GAME_TIME_SEC: number = 1 * 60;
+  const GAME_TIME_SEC: number = 3;
 
   let globalStatePda: anchor.web3.PublicKey;
   let currentGameStatePda: anchor.web3.PublicKey;
@@ -60,7 +58,7 @@ describe('solana-button', () => {
     );
 
     // Initialize the global state
-    await program.methods
+    const tx = await program.methods
       .initializeGlobalState()
       .accounts({
         globalState: globalStatePda,
@@ -68,6 +66,8 @@ describe('solana-button', () => {
         systemProgram: anchor.web3.SystemProgram.programId,
       })
       .rpc();
+
+    expect(tx).toBeTruthy();
   });
 
   describe('Should initializes the global state correctly', () => {
@@ -86,7 +86,7 @@ describe('solana-button', () => {
       expect(globalStateAccount.nextGameId.toNumber()).toBe(0);
     });
 
-    it('Should set the global state active game id to none', async () => {
+    it('Should set the global state active game id to None', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
@@ -112,7 +112,7 @@ describe('solana-button', () => {
       );
 
       // Execute the create_new_game instruction as admin.
-      await program.methods
+      const tx = await program.methods
         .createNewGame(
           new anchor.BN(DEPOSIT_AMOUNT),
           new anchor.BN(GAME_TIME_SEC)
@@ -125,6 +125,8 @@ describe('solana-button', () => {
           systemProgram: anchor.web3.SystemProgram.programId,
         })
         .rpc();
+
+      expect(tx).toBeTruthy();
     });
 
     it('Should set the global state active game id to the game state id', async () => {
@@ -161,7 +163,7 @@ describe('solana-button', () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
-      expect(gameStateAccount.lastClicker.toBase58()).toBe(SystemProgram.programId.toBase58());
+      expect(gameStateAccount.lastClicker.toBase58()).toBe(anchor.web3.SystemProgram.programId.toBase58());
     });
 
     it('Should set the game state time in second to the configured value', async () => {
@@ -338,14 +340,21 @@ describe('solana-button', () => {
   describe('Should be possible for User 1 to click on button', () => {
 
     let vaultAccountBeforeClick;
-    let userInitialeBalance;
+    let user1InitialeBalance: number;
+    let user1ClickButtonDate: number;
     beforeAll(async () => {
 
-      userInitialeBalance = await provider.connection.getBalance(USER_1.publicKey);
+      user1InitialeBalance = await provider.connection.getBalance(USER_1.publicKey);
 
       vaultAccountBeforeClick = await program.account.vault.fetch(currentVaultPda);
+    });
 
-      await program.methods
+    it('Should successfully process a button click by User 1', async () => {
+
+      // Get date time (seconde precision)
+      user1ClickButtonDate = Math.floor(Date.now() / 1000);
+
+      const tx = await program.methods
         .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
         .accounts({
           globalState: globalStatePda,
@@ -357,14 +366,19 @@ describe('solana-button', () => {
         })
         .signers([USER_1])
         .rpc()
+
+      expect(tx).toBeTruthy();
     });
 
-    it('Should increase the vault balance by the deposit amount', async () => {
+    it('Should set the game state last click time stamp', async () => {
 
-      const vaultAccount = await program.account.vault.fetch(currentVaultPda);
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
-      expect(vaultAccount.balance.toNumber()).toBe(vaultAccountBeforeClick.balance.toNumber() + DEPOSIT_AMOUNT);
+      // Check if it's closed with margin error of ~2 seconds 
+      expect(gameStateAccount.lastClickTimestamp / 4).toBeCloseTo(user1ClickButtonDate / 4, 0);
+
     });
+
 
     it('Should set the game state last clicker to User 1 public key', async () => {
 
@@ -380,11 +394,18 @@ describe('solana-button', () => {
       expect(gameStateAccount.clickNumber.toNumber()).toBe(1);
     });
 
+    it('Should increase the vault balance by the deposit amount', async () => {
+
+      const vaultAccount = await program.account.vault.fetch(currentVaultPda);
+
+      expect(vaultAccount.balance.toNumber()).toBe(vaultAccountBeforeClick.balance.toNumber() + DEPOSIT_AMOUNT);
+    });
+
     it('Should decrease the User 1 balance by the deposit amount', async () => {
 
       const userBalance = await provider.connection.getBalance(USER_1.publicKey);
 
-      expect(userBalance).toBe(userInitialeBalance - DEPOSIT_AMOUNT);
+      expect(userBalance).toBe(user1InitialeBalance - DEPOSIT_AMOUNT);
     });
 
     it('Should fail if User 1 is the last clicker', async () => {
@@ -410,14 +431,21 @@ describe('solana-button', () => {
   describe('Should be possible for another User 2 to click on button', () => {
 
     let vaultAccountBeforeClick;
-    let userInitialeBalance;
+    let user2InitialeBalance: number;
+    let user2ClickButtonDate: number;
     beforeAll(async () => {
 
-      userInitialeBalance = await provider.connection.getBalance(USER_2.publicKey);
-
+      user2InitialeBalance = await provider.connection.getBalance(USER_2.publicKey);
       vaultAccountBeforeClick = await program.account.vault.fetch(currentVaultPda);
 
-      await program.methods
+    });
+
+    it('Should successfully process a button click by User 2', async () => {
+
+      // Get date time (second precision)
+      user2ClickButtonDate = Math.floor(Date.now() / 1000);
+
+      const tx = await program.methods
         .clickButton(new anchor.BN(DEPOSIT_AMOUNT))
         .accounts({
           globalState: globalStatePda,
@@ -429,7 +457,18 @@ describe('solana-button', () => {
         })
         .signers([USER_2])
         .rpc()
+
+      expect(tx).toBeTruthy();
     });
+
+    it('Should set the game state last click time stamp', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      // Check if it's closed with margin error of ~2 seconds 
+      expect(gameStateAccount.lastClickTimestamp / 4).toBeCloseTo(user2ClickButtonDate / 4, 0);
+    });
+
 
     it('Should increase the vault balance by the deposit amount', async () => {
 
@@ -456,7 +495,7 @@ describe('solana-button', () => {
 
       const userBalance = await provider.connection.getBalance(USER_2.publicKey);
 
-      expect(userBalance).toBe(userInitialeBalance - DEPOSIT_AMOUNT);
+      expect(userBalance).toBe(user2InitialeBalance - DEPOSIT_AMOUNT);
     });
 
     it('Should fail if User 2 is the last clicker', async () => {
@@ -475,6 +514,119 @@ describe('solana-button', () => {
           .signers([USER_2])
           .rpc()
       ).rejects.toThrow(/AlreadyLastClicker/);
+    });
+  });
+
+  describe('Should end the game correctly', () => {
+    beforeAll(async () => {
+
+      // Wait until the countdown is over
+      await new Promise(resolve => setTimeout(resolve, (GAME_TIME_SEC + 1) * 1000));
+    });
+
+    it('should successfully process the verify game instruction', async () => {
+
+      const tx = await program.methods
+        .verifyGameState()
+        .accounts({
+          globalState: globalStatePda,
+          gameState: currentGameStatePda,
+        })
+        .rpc()
+
+      expect(tx).toBeTruthy();
+    });
+
+    it('Should set the game state is active to false', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(!gameStateAccount.isActive);
+    });
+
+    it('Should set the game state has ended to true', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.hasEnded);
+    });
+
+    it('Should set the global state active game id to None', async () => {
+
+      const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
+
+      expect(globalStateAccount.activeGameId).toBeNull();;
+    });
+  });
+
+  describe('Should be possible for the winner to claim the reward', () => {
+
+    let user2InitialeBalance: number;
+    let vaultAccountReward: number;
+    beforeAll(async () => {
+      user2InitialeBalance = await provider.connection.getBalance(USER_2.publicKey);
+
+      const vaultAccount = await program.account.vault.fetch(currentVaultPda);
+      vaultAccountReward = vaultAccount.balance.toNumber();
+    });
+
+    it('should fail if User 1 trying to claim the reward (User 2 is the winner)', async () => {
+
+      await expect(
+        program.methods
+          .claimReward()
+          .accounts({
+            gameState: currentGameStatePda,
+            vault: currentVaultPda,
+            user: USER_1.publicKey,
+
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
+          .signers([USER_1])
+          .rpc()
+      ).rejects.toThrow(/NotLastClicker/);
+    });
+
+    it('Should have the vault balance > 0', async () => {
+
+      const vaultAccount = await program.account.vault.fetch(currentVaultPda);
+      expect(vaultAccount.balance.toNumber()).toBeGreaterThan(0);
+    });
+
+    it('should successfully process the claim reward instruction', async () => {
+
+      const tx = await program.methods
+        .claimReward()
+        .accounts({
+          gameState: currentGameStatePda,
+          vault: currentVaultPda,
+          user: USER_2.publicKey,
+
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .signers([USER_2])
+        .rpc()
+
+      expect(tx).toBeTruthy();
+    });
+
+    it('Should have the game state has ended to true', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+      expect(gameStateAccount.hasEnded);
+    });
+
+    it('Should increase the user balance by the vault reward', async () => {
+
+      const user2Balance = await provider.connection.getBalance(USER_2.publicKey);
+      expect(user2Balance).toBe(user2InitialeBalance + vaultAccountReward);
+    });
+
+
+    it('Should reset the vault balance', async () => {
+
+      const vaultAccount = await program.account.vault.fetch(currentVaultPda);
+      expect(vaultAccount.balance.toNumber()).toBe(0);
     });
   });
 });
