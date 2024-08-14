@@ -70,23 +70,23 @@ describe('solana-button', () => {
       .rpc();
   });
 
-  describe('Should global state be initialized correctly', () => {
+  describe('Should initializes the global state correctly', () => {
 
-    it('Should global state admin be set to admin public key', async () => {
+    it('Should set the global state admin to admin public key', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
       expect(globalStateAccount.authority.toBase58()).toBe(ADMIN_PUBKEY.toBase58());
     });
 
-    it('Should global state next game id be set to 0', async () => {
+    it('Should set the global state next game id to 0', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
       expect(globalStateAccount.nextGameId.toNumber()).toBe(0);
     });
 
-    it('Should global state active game id be set to none', async () => {
+    it('Should set the global state active game id to none', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
@@ -94,7 +94,7 @@ describe('solana-button', () => {
     });
   });
 
-  describe('Should Admin can create a new game', () => {
+  describe('Should be possible for Admin to create a new game', () => {
 
     beforeAll(async () => {
 
@@ -127,7 +127,7 @@ describe('solana-button', () => {
         .rpc();
     });
 
-    it('Should the new created game be the global active game', async () => {
+    it('Should set the global state active game id to the game state id', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
@@ -136,63 +136,56 @@ describe('solana-button', () => {
       expect(globalStateAccount.activeGameId.toNumber()).toBe(gameStateAccount.gameId.toNumber());
     });
 
-    it('Should game state new game id be 0', async () => {
+    it('Should set the game state game id to 0', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.gameId.toNumber()).toBe(0);
     });
 
-    it('Should game state new game be active', async () => {
+    it('Should set the game state is active to true', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.isActive).toBe(true);
     });
 
-    it('Should game state new game not be ended', async () => {
+    it('Should set the game state has ended to false', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(!gameStateAccount.hasEnded);
     });
 
-    it('Should game state last user not be initialized', async () => {
+    it('Should not set the game state last user', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.lastClicker.toBase58()).toBe(SystemProgram.programId.toBase58());
     });
 
-    it('Should game state time in second be equal to the configured value', async () => {
+    it('Should set the game state time in second to the configured value', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.gameTimeSec.toNumber()).toBe(GAME_TIME_SEC);
     });
 
-    it('Should game state time in second be equal to the configured value', async () => {
-
-      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
-
-      expect(gameStateAccount.gameTimeSec.toNumber()).toBe(GAME_TIME_SEC);
-    });
-
-    it('Should global state next game id be set to 1', async () => {
+    it('Should set the global state next game id to 1', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
       expect(globalStateAccount.nextGameId.toNumber()).toBe(1);
     });
 
-    it('Should global state active game id be set to 0', async () => {
+    it('Should set the global state active game id to 0', async () => {
 
       const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
 
       expect(globalStateAccount.activeGameId.toNumber()).toBe(0);
     });
 
-    it('Should not create a new game if creator is not admin', async () => {
+    it('Should fail if creator is not admin', async () => {
 
       const [newGameStateAccount] = await anchor.web3.PublicKey.findProgramAddress(
         [Buffer.from(SEED_GAME), new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
@@ -223,7 +216,7 @@ describe('solana-button', () => {
       ).rejects.toThrow(/Unauthorized/);
     });
 
-    it('Should not create a new game if one is already active', async () => {
+    it('Should fail if another game is already active', async () => {
 
       const [newGameStateAccount] = await anchor.web3.PublicKey.findProgramAddress(
         [Buffer.from(SEED_GAME), new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
@@ -253,21 +246,21 @@ describe('solana-button', () => {
       ).rejects.toThrow(/GameAlreadyActive/);
     });
 
-    it('Should vault authority be set to admin public key', async () => {
+    it('Should set the vault authority to admin public key', async () => {
 
       const vaultStateAccount = await program.account.vault.fetch(currentVaultPda);
 
       expect(vaultStateAccount.authority.toBase58()).toBe(ADMIN_PUBKEY.toBase58());
     });
 
-    it('Should vault intiale balance be set to 0', async () => {
+    it('Should set the vault intiale balance to 0', async () => {
 
       const vaultStateAccount = await program.account.vault.fetch(currentVaultPda);
 
       expect(vaultStateAccount.balance.toNumber()).toBe(0);
     });
 
-    it('Should vault deposit amount be set to the configured value', async () => {
+    it('Should set the vault deposit amount to the configured value', async () => {
 
       const vaultStateAccount = await program.account.vault.fetch(currentVaultPda);
 
@@ -275,9 +268,9 @@ describe('solana-button', () => {
     });
   });
 
-  describe('Should User cannot click on button', () => {
+  describe('Should fail if a User click on button', () => {
 
-    it('Should User cannot click button if deposit amount is incorrect', async () => {
+    it('Should fail if deposit amount is incorrect', async () => {
 
       await expect(
         program.methods
@@ -295,7 +288,7 @@ describe('solana-button', () => {
       ).rejects.toThrow(/IncorrectDepositAmount/);
     });
 
-    it('Should User cannot click button if game is not active', async () => {
+    it('Should fail if game is not active', async () => {
 
       const [newGameStateAccount] = await anchor.web3.PublicKey.findProgramAddress(
         [Buffer.from(SEED_GAME), new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
@@ -323,7 +316,7 @@ describe('solana-button', () => {
       ).rejects.toThrow(/AccountNotInitialized./);
     });
 
-    it('Should User cannot click button if there is not enough money', async () => {
+    it('Should fail if User has not enough money', async () => {
 
       await expect(
         program.methods
@@ -342,7 +335,7 @@ describe('solana-button', () => {
     });
   });
 
-  describe('Should User 1 can click on button', () => {
+  describe('Should be possible for User 1 to click on button', () => {
 
     let vaultAccountBeforeClick;
     let userInitialeBalance;
@@ -366,35 +359,35 @@ describe('solana-button', () => {
         .rpc()
     });
 
-    it('Should vault balance be increased by deposit amount', async () => {
+    it('Should increase the vault balance by the deposit amount', async () => {
 
       const vaultAccount = await program.account.vault.fetch(currentVaultPda);
 
       expect(vaultAccount.balance.toNumber()).toBe(vaultAccountBeforeClick.balance.toNumber() + DEPOSIT_AMOUNT);
     });
 
-    it('Should game state last clicker be the user 1', async () => {
+    it('Should set the game state last clicker to User 1 public key', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.lastClicker.toBase58()).toBe(USER_1.publicKey.toBase58());
     });
 
-    it('Should game state click number must be equal to 1', async () => {
+    it('Should increase the game state click number and be equal to 1', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.clickNumber.toNumber()).toBe(1);
     });
 
-    it('Should user 1 balance be decreased by deposit amount', async () => {
+    it('Should decrease the User 1 balance by the deposit amount', async () => {
 
       const userBalance = await provider.connection.getBalance(USER_1.publicKey);
 
       expect(userBalance).toBe(userInitialeBalance - DEPOSIT_AMOUNT);
     });
 
-    it('Should user 1 cannot click again if he is the last clicker', async () => {
+    it('Should fail if User 1 is the last clicker', async () => {
 
       await expect(
         program.methods
@@ -414,7 +407,7 @@ describe('solana-button', () => {
 
   });
 
-  describe('Should another User 2 can click on button', () => {
+  describe('Should be possible for another User 2 to click on button', () => {
 
     let vaultAccountBeforeClick;
     let userInitialeBalance;
@@ -438,35 +431,35 @@ describe('solana-button', () => {
         .rpc()
     });
 
-    it('Should vault balance be increased by deposit amount', async () => {
+    it('Should increase the vault balance by the deposit amount', async () => {
 
       const vaultAccount = await program.account.vault.fetch(currentVaultPda);
 
       expect(vaultAccount.balance.toNumber()).toBe(vaultAccountBeforeClick.balance.toNumber() + DEPOSIT_AMOUNT);
     });
 
-    it('Should game state last clicker be the user 2', async () => {
+    it('Should set the game state last clicker to User 2 public key', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.lastClicker.toBase58()).toBe(USER_2.publicKey.toBase58());
     });
 
-    it('Should game state click number must be equal to 2', async () => {
+    it('Should increase the game state click number and be equal to 2', async () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
       expect(gameStateAccount.clickNumber.toNumber()).toBe(2);
     });
 
-    it('Should user 2 balance be decreased by deposit amount', async () => {
+    it('Should decrease the User 2 balance by the deposit amount', async () => {
 
       const userBalance = await provider.connection.getBalance(USER_2.publicKey);
 
       expect(userBalance).toBe(userInitialeBalance - DEPOSIT_AMOUNT);
     });
 
-    it('Should user 2 cannot click again if he is the last clicker', async () => {
+    it('Should fail if User 2 is the last clicker', async () => {
 
       await expect(
         program.methods
