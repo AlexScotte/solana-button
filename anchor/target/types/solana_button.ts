@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/solana_button.json`.
  */
 export type SolanaButton = {
-  "address": "7zWaRVHxPeM3onPKRtJPzJfWTppwX4JimBj1oq2yDXzY",
+  "address": "GwEZy7BPKF3J1QTgXvYqQHCCE9rq2DmvgpKovJGBnfhA",
   "metadata": {
     "name": "solanaButton",
     "version": "0.1.0",

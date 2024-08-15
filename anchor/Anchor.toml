@@ -6,13 +6,13 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-solana_button = "7zWaRVHxPeM3onPKRtJPzJfWTppwX4JimBj1oq2yDXzY"
+solana_button = "4p5V8JvhjBoshkqGGT4Lr1DAMuPX2fLuo3GbuGCuv3R1"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

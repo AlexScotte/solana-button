@@ -618,7 +618,7 @@ describe('solana-button', () => {
       expect(finalAdminBalance).toBe(initialAdminBalance);
     });
 
-    it('should fail if User 1 trying to claim the reward (User 2 is the winner)', async () => {
+    it('Should fail if User 1 trying to claim the reward (User 2 is the winner)', async () => {
 
       await expect(
         program.methods
