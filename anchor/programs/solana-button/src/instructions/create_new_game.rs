@@ -22,7 +22,7 @@ pub fn create_new_game(ctx: Context<CreateNewGameData>, deposit_amount: u64, gam
     game_state.game_time_sec = game_time_sec;
 
     // Initialize vault to store the reward
-    vault.authority = *ctx.accounts.user.key;
+    vault.game_id = global_state.next_game_id;
     vault.balance = 0;
     vault.deposit_amount = deposit_amount;
 
@@ -52,7 +52,7 @@ pub struct CreateNewGameData<'info> {
     #[account(
         init,
         payer = user,
-        space = 8 + 32 + 8 + 8,
+        space = 8 + 8 + 8 + 8,
         seeds = [b"vault".as_ref(), &global_state.next_game_id.to_le_bytes()], 
         bump
     )]
@@ -78,7 +78,7 @@ pub struct GameState {
 
 #[account]
 pub struct Vault {
-    pub authority: Pubkey, 
+    pub game_id: u64,
     pub balance: u64,
     pub deposit_amount: u64,
 }

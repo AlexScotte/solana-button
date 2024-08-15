@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 
-use crate::GlobalState;
 use crate::GameState;
 use crate::Vault;
 

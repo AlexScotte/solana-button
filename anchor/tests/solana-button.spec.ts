@@ -56,21 +56,24 @@ describe('solana-button', () => {
       [Buffer.from(SEED_GLOBAL)],
       program.programId
     );
-
-    // Initialize the global state
-    const tx = await program.methods
-      .initializeGlobalState()
-      .accounts({
-        globalState: globalStatePda,
-        authority: ADMIN_PUBKEY,
-        systemProgram: anchor.web3.SystemProgram.programId,
-      })
-      .rpc();
-
-    expect(tx).toBeTruthy();
   });
 
   describe('Should initializes the global state correctly', () => {
+
+    it('Should successfully process the initial global state instruction', async () => {
+
+      // Initialize the global state
+      const tx = await program.methods
+        .initializeGlobalState()
+        .accounts({
+          globalState: globalStatePda,
+          authority: ADMIN_PUBKEY,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+
+      expect(tx).toBeTruthy();
+    });
 
     it('Should set the global state admin to admin public key', async () => {
 
@@ -110,6 +113,9 @@ describe('solana-button', () => {
         [Buffer.from("vault"), globalStateAccount.nextGameId.toArrayLike(Buffer, "le", 8)],
         program.programId
       );
+    });
+
+    it('Should successfully process a create game instruction', async () => {
 
       // Execute the create_new_game instruction as admin.
       const tx = await program.methods
@@ -248,11 +254,11 @@ describe('solana-button', () => {
       ).rejects.toThrow(/GameAlreadyActive/);
     });
 
-    it('Should set the vault authority to admin public key', async () => {
+    it('Should set the vault game id to 0', async () => {
 
       const vaultStateAccount = await program.account.vault.fetch(currentVaultPda);
 
-      expect(vaultStateAccount.authority.toBase58()).toBe(ADMIN_PUBKEY.toBase58());
+      expect(vaultStateAccount.gameId.toNumber()).toBe(0);
     });
 
     it('Should set the vault intiale balance to 0', async () => {
@@ -570,6 +576,48 @@ describe('solana-button', () => {
       vaultAccountReward = vaultAccount.balance.toNumber();
     });
 
+    it('Should fail if Admin trying to transfer funds from the vault', async () => {
+
+      // Get the initial balances
+      const initialVaultBalance = await provider.connection.getBalance(currentVaultPda);
+      const initialAdminBalance = await provider.connection.getBalance(ADMIN_PUBKEY);
+
+      const latestBlockhashInfo = await provider.connection.getLatestBlockhash("confirmed");
+
+      // Attempt to transfer funds from vault to admin wallet
+      const transaction = new anchor.web3.Transaction({
+        blockhash: latestBlockhashInfo.blockhash,
+        feePayer: ADMIN_PUBKEY,
+        lastValidBlockHeight: latestBlockhashInfo.lastValidBlockHeight,
+      })
+        .add(
+          anchor.web3.SystemProgram.transfer({
+            fromPubkey: currentVaultPda,
+            toPubkey: ADMIN_PUBKEY,
+            lamports: initialVaultBalance,
+          })
+        );
+
+      const signedTransaction = await provider.wallet.signTransaction(transaction);
+      let error;
+      try {
+        await provider.connection.sendRawTransaction(signedTransaction.serialize());
+      } catch (e) {
+        error = e;
+      }
+
+      // Check that an error was thrown
+      expect(error).toBeDefined();
+      expect(error.message).toContain('Signature verification failed');
+
+      // Verify balances haven't changed
+      const finalVaultBalance = await provider.connection.getBalance(currentVaultPda);
+      const finalAdminBalance = await provider.connection.getBalance(ADMIN_PUBKEY);
+
+      expect(finalVaultBalance).toBe(initialVaultBalance);
+      expect(finalAdminBalance).toBe(initialAdminBalance);
+    });
+
     it('should fail if User 1 trying to claim the reward (User 2 is the winner)', async () => {
 
       await expect(
@@ -621,7 +669,6 @@ describe('solana-button', () => {
       const user2Balance = await provider.connection.getBalance(USER_2.publicKey);
       expect(user2Balance).toBe(user2InitialeBalance + vaultAccountReward);
     });
-
 
     it('Should reset the vault balance', async () => {
 

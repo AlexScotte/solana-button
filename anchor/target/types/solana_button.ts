@@ -299,28 +299,18 @@ export type SolanaButton = {
   "errors": [
     {
       "code": 6000,
-      "name": "incorrectDepositAmount",
-      "msg": "Incorrect deposit amount"
+      "name": "unauthorized",
+      "msg": "unauthorized"
     },
     {
       "code": 6001,
-      "name": "insufficientFunds",
-      "msg": "Insufficient funds in user account"
+      "name": "gameAlreadyActive",
+      "msg": "A game is already active"
     },
     {
       "code": 6002,
-      "name": "gameNotActive",
-      "msg": "Game not active"
-    },
-    {
-      "code": 6003,
-      "name": "alreadyLastClicker",
-      "msg": "Already the last clicker"
-    },
-    {
-      "code": 6004,
-      "name": "gameEnded",
-      "msg": "Game has ended"
+      "name": "incorrectGameTimeValue",
+      "msg": "Incorrect game time value"
     }
   ],
   "types": [
@@ -390,8 +380,8 @@ export type SolanaButton = {
         "kind": "struct",
         "fields": [
           {
-            "name": "authority",
-            "type": "pubkey"
+            "name": "gameId",
+            "type": "u64"
           },
           {
             "name": "balance",
