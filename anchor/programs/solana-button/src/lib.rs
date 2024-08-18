@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 use instructions::*;
 
-declare_id!("4p5V8JvhjBoshkqGGT4Lr1DAMuPX2fLuo3GbuGCuv3R1");
+declare_id!("EGMzXToSqdq8PfSDergoQNEphopAF4EVsBzSapKU9JLi");
 
 #[program]
 pub mod solana_button {

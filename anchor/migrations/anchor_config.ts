@@ -1,5 +1,6 @@
 import * as anchor from '@coral-xyz/anchor';
 import { clusterApiUrl } from "@solana/web3.js";
+import { SolanaButton } from '../target/types/solana_button';
 import bs58 from "bs58";
 
 import "dotenv/config";
@@ -31,7 +32,7 @@ export async function initializeAnchor() {
     const wallet = new anchor.Wallet(walletKP as any);
     console.log("Wallet:", wallet.publicKey.toBase58());
 
-    const provider = new anchor.AnchorProvider(connection as any, wallet, {
+    const provider = new anchor.AnchorProvider(connection, wallet, {
         preflightCommitment: "processed",
         commitment: "confirmed",
     });
@@ -41,7 +42,7 @@ export async function initializeAnchor() {
         fs.readFileSync("./target/idl/solana_button.json", "utf8")
     );
 
-    const program = new anchor.Program(idl, provider);
+    const program = new anchor.Program<SolanaButton>(idl, provider);
     console.log("Program ID:", program.programId.toBase58());
 
     return { provider, program, wallet };

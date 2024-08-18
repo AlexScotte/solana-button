@@ -23,6 +23,9 @@ deploy:
 test:
 	@anchor test
 
+init:
+	@ts-node migrations/initialize_global_state.ts
+
 game:
 	@ts-node migrations/create_game.ts
 
