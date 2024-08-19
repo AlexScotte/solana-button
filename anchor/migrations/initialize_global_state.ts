@@ -10,8 +10,8 @@ async function main() {
 
     const { provider, program, wallet } = await initializeAnchor();
 
-    console.log(program.programId.toBase58());
-
+    console.log("⌛ Trying to initialize the global state");
+    
     const { globalStatePda } = await getGlobalStatePda(program);
 
     //     TODO: check why error "Type instantiation is excessively deep and possibly infinite.ts(2589)"
@@ -42,16 +42,20 @@ async function main() {
         lastValidBlockHeight: latestBlockhashInfo.lastValidBlockHeight,
     }).add(initializeGlobalStateInstruction);
 
-
     const signedTx = await sendAndConfirmTransaction(provider.connection, txInitializeGlobalState, [
         wallet.payer,
     ]);
 
-    console.log("Transaction signature", signedTx);
+    console.log("📝 Transaction signature", signedTx);
 
     await provider.connection.confirmTransaction(signedTx);
+
+    console.log("✅ Global state initialized");
+
+    const globalStateAcc = await program.account.globalState.fetch(globalStatePda);
+    console.log("📋 Global state account", globalStateAcc);
 }
 
 main().catch((error) => {
-    console.error("An error occurred:", error);
+    console.error("❌ An error occurred:", error);
 });

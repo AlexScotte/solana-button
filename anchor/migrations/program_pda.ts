@@ -21,17 +21,17 @@ export async function getGlobalStatePda(program: anchor.Program<SolanaButton>): 
 export async function getGameStatePda(program: anchor.Program<SolanaButton>, gameId: number): Promise<{ gameStatePda: anchor.web3.PublicKey }> {
 
     const [gameStatePda] = await anchor.web3.PublicKey.findProgramAddress(
-        [Buffer.from(SEED_GAME), globalStateAccount.nextGameId.toArrayLike(Buffer, "le", 8)],
+        [Buffer.from(SEED_GAME), new anchor.BN(gameId).toArrayLike(Buffer, "le", 8)],
         program.programId
     );
 
     return { gameStatePda };
 }
 
-export async function getVaultPda(program: anchor.Program, gameId: number): Promise<{ vaultPda: anchor.web3.PublicKey }> {
+export async function getVaultPda(program: anchor.Program<SolanaButton>, gameId: number): Promise<{ vaultPda: anchor.web3.PublicKey }> {
 
     const [vaultPda] = await anchor.web3.PublicKey.findProgramAddress(
-        [Buffer.from("vault"), globalStateAccount.nextGameId.toArrayLike(Buffer, "le", 8)],
+        [Buffer.from(SEED_VAULT), new anchor.BN(gameId).toArrayLike(Buffer, "le", 8)],
         program.programId
     );
     return { vaultPda };

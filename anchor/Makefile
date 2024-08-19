@@ -29,5 +29,7 @@ init:
 game:
 	@ts-node migrations/create_game.ts
 
+verify:
+	@ts-node migrations/verify_game_state.ts
 
 # solana config set --url devnet

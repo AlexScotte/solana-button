@@ -9,68 +9,48 @@ import { getGameStatePda, getGlobalStatePda, getVaultPda } from './program_pda';
 
 async function main() {
 
-    const DEPOSIT_AMOUNT_SOL = 0.01;
-    const DURATION_HOURS = 24;
-
-    // 0.01 SOL
-    const DEPOSIT_AMOUNT = DEPOSIT_AMOUNT_SOL * anchor.web3.LAMPORTS_PER_SOL;
-    // 24 hours
-    const DEPOSIT_DURATION = DURATION_HOURS * 60 * 60;
-
     const { provider, program, wallet } = await initializeAnchor();
 
-    console.log("⌛ Trying to create a new game with deposit amount: ", DEPOSIT_AMOUNT_SOL, " and duration: ", DURATION_HOURS);
+    console.log("⌛ Trying verify the game state: ");
 
     const { globalStatePda } = await getGlobalStatePda(program);
     const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
-    console.log("📋 Global state account", globalStateAccount);
     
-    const { gameStatePda } = await getGameStatePda(program, globalStateAccount.nextGameId);
+    const { gameStatePda } = await getGameStatePda(program, globalStateAccount.activeGameId);
 
-    const { vaultPda } = await getVaultPda(program, globalStateAccount.nextGameId);
+    const { vaultPda } = await getVaultPda(program, globalStateAccount.activeGameId);
 
     //     TODO: check why error "Type instantiation is excessively deep and possibly infinite.ts(2589)"
-    //     const tx = await program.methods
-    //         .createNewGame(
-    //             new anchor.BN(DEPOSIT_AMOUNT),
-    //             new anchor.BN(DEPOSIT_DURATION)
-    //         )
-    //         .accounts({
-    //             globalState: globalStatePda,
-    //             gameState: currentGameStatePda,
-    //             vault: currentVaultPda,
-    //             user: ADMIN_PUBKEY,
-    //             systemProgram: anchor.web3.SystemProgram.programId,
-    //         })
-    //         .rpc();
+    // const tx = await program.methods
+    //     .verifyGameState()
+    //     .accounts({
+    //     globalState: globalStatePda,
+    //     gameState: gameStatePda,
+    //     })
+    //     .rpc();
 
     // const currentGameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
     // console.log("Current game state account", currentGameStateAccount);
 
-    const createGameStateInstruction = await program.instruction.createNewGame(
-        new anchor.BN(DEPOSIT_AMOUNT),
-        new anchor.BN(DEPOSIT_DURATION),
+    const verifyGameStateInstruction = await program.instruction.verifyGameState(
         {
             accounts: {
                 globalState: globalStatePda,
                 gameState: gameStatePda,
-                vault: vaultPda,
-                user: wallet.publicKey,
-                systemProgram: anchor.web3.SystemProgram.programId,
             },
         }
     );
 
     const latestBlockhashInfo = await provider.connection.getLatestBlockhash("confirmed");
 
-    const txCreateGameState = new anchor.web3.Transaction({
+    const txVerifyGameState = new anchor.web3.Transaction({
         blockhash: latestBlockhashInfo.blockhash,
         feePayer: wallet.publicKey,
         lastValidBlockHeight: latestBlockhashInfo.lastValidBlockHeight,
-    }).add(createGameStateInstruction);
+    }).add(verifyGameStateInstruction);
 
 
-    const signedTx = await sendAndConfirmTransaction(provider.connection, txCreateGameState, [
+    const signedTx = await sendAndConfirmTransaction(provider.connection, txVerifyGameState, [
         wallet.payer,
     ]);
 
@@ -78,7 +58,7 @@ async function main() {
 
     await provider.connection.confirmTransaction(signedTx);
 
-    console.log("✅ Game created successfully");
+    console.log("✅ Game verified successfully");
 
     const globalStateAcc = await program.account.globalState.fetch(globalStatePda);
     console.log("📋 Global state account", globalStateAcc);
