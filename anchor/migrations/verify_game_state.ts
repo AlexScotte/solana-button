@@ -67,7 +67,7 @@ async function main() {
     console.log("🎮 Game state account", gameStateAccount);
 
     const vaultStateAccount = await program.account.vault.fetch(vaultPda);
-    console.log("🪙 Vault state account", vaultStateAccount);
+    console.log("🪙  Vault state account", vaultStateAccount);
 }
 
 main().catch((error) => {
