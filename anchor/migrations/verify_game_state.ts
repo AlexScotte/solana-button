@@ -4,21 +4,21 @@ import "dotenv/config";
 import { initializeAnchor } from './anchor_config';
 import { sendAndConfirmTransaction } from '@solana/web3.js';
 
-import { getGameStatePda, getGlobalStatePda, getVaultPda } from './program_pda';
+import { getGameStatePda, getGlobalStatePda, getGameVaultPda } from './program_pda';
 
 
 async function main() {
 
     const { provider, program, wallet } = await initializeAnchor();
 
-    console.log("⌛ Trying verify the game state: ");
+    console.log("⌛ Trying to verify the game state");
 
     const { globalStatePda } = await getGlobalStatePda(program);
     const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
     
     const { gameStatePda } = await getGameStatePda(program, globalStateAccount.activeGameId);
 
-    const { vaultPda } = await getVaultPda(program, globalStateAccount.activeGameId);
+    const { vaultPda } = await getGameVaultPda(program, globalStateAccount.activeGameId);
 
     //     TODO: check why error "Type instantiation is excessively deep and possibly infinite.ts(2589)"
     // const tx = await program.methods
@@ -54,22 +54,22 @@ async function main() {
         wallet.payer,
     ]);
 
-    console.log("📝 Transaction signature", signedTx);
+    console.log("📝 Transaction signature: ", signedTx);
 
     await provider.connection.confirmTransaction(signedTx);
 
     console.log("✅ Game verified successfully");
 
     const globalStateAcc = await program.account.globalState.fetch(globalStatePda);
-    console.log("📋 Global state account", globalStateAcc);
+    console.log("📋 Global state account: ", globalStateAcc);
 
     const gameStateAccount = await program.account.gameState.fetch(gameStatePda);
-    console.log("🎮 Game state account", gameStateAccount);
+    console.log("🎮 Game state account: ", gameStateAccount);
 
-    const vaultStateAccount = await program.account.vault.fetch(vaultPda);
-    console.log("🪙  Vault state account", vaultStateAccount);
+    const gameVaultStateAccount = await program.account.vault.fetch(vaultPda);
+    console.log("🪙 Game Vault state account: ", gameVaultStateAccount);
 }
 
 main().catch((error) => {
-    console.error("❌ An error occurred:", error);
+    console.error("❌ An error occurred: ", error);
 });

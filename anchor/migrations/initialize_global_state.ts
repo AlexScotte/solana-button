@@ -46,16 +46,16 @@ async function main() {
         wallet.payer,
     ]);
 
-    console.log("📝 Transaction signature", signedTx);
+    console.log("📝 Transaction signature: ", signedTx);
 
     await provider.connection.confirmTransaction(signedTx);
 
     console.log("✅ Global state initialized");
 
     const globalStateAcc = await program.account.globalState.fetch(globalStatePda);
-    console.log("📋 Global state account", globalStateAcc);
+    console.log("📋 Global state account: ", globalStateAcc);
 }
 
 main().catch((error) => {
-    console.error("❌ An error occurred:", error);
+    console.error("❌ An error occurred: ", error);
 });

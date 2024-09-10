@@ -299,28 +299,18 @@ export type SolanaButton = {
   "errors": [
     {
       "code": 6000,
-      "name": "incorrectDepositAmount",
-      "msg": "Incorrect deposit amount"
+      "name": "gameNotEnded",
+      "msg": "Game has not ended"
     },
     {
       "code": 6001,
-      "name": "insufficientFunds",
-      "msg": "Insufficient funds in user account"
+      "name": "notLastClicker",
+      "msg": "User is not the last clicker"
     },
     {
       "code": 6002,
-      "name": "gameNotActive",
-      "msg": "Game not active"
-    },
-    {
-      "code": 6003,
-      "name": "alreadyLastClicker",
-      "msg": "Already the last clicker"
-    },
-    {
-      "code": 6004,
-      "name": "gameEnded",
-      "msg": "Game has ended"
+      "name": "noRewardsInVault",
+      "msg": "No rewards in vault"
     }
   ],
   "types": [

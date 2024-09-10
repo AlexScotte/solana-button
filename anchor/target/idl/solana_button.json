@@ -1,5 +1,5 @@
 {
-  "address": "EGMzXToSqdq8PfSDergoQNEphopAF4EVsBzSapKU9JLi",
+  "address": "4jk1wC7pWNviuTtYHsuBeHUexipfCACxXSzcE7qRR84a",
   "metadata": {
     "name": "solana_button",
     "version": "0.1.0",
@@ -293,28 +293,18 @@
   "errors": [
     {
       "code": 6000,
-      "name": "IncorrectDepositAmount",
-      "msg": "Incorrect deposit amount"
+      "name": "GameNotEnded",
+      "msg": "Game has not ended"
     },
     {
       "code": 6001,
-      "name": "InsufficientFunds",
-      "msg": "Insufficient funds in user account"
+      "name": "NotLastClicker",
+      "msg": "User is not the last clicker"
     },
     {
       "code": 6002,
-      "name": "GameNotActive",
-      "msg": "Game not active"
-    },
-    {
-      "code": 6003,
-      "name": "AlreadyLastClicker",
-      "msg": "Already the last clicker"
-    },
-    {
-      "code": 6004,
-      "name": "GameEnded",
-      "msg": "Game has ended"
+      "name": "NoRewardsInVault",
+      "msg": "No rewards in vault"
     }
   ],
   "types": [
