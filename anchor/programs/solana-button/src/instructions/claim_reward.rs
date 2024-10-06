@@ -1,12 +1,17 @@
 use anchor_lang::prelude::*;
 
+use crate::GlobalState;
 use crate::GameState;
 use crate::Vault;
-
+use crate::verify_game_state::internal_verify_game_state;
 
 pub fn claim_reward(ctx: Context<ClaimRewardData>) -> Result<()> {
     let vault = &mut ctx.accounts.vault;
+    let global_state = &mut ctx.accounts.global_state;
     let game_state = &mut ctx.accounts.game_state;
+
+    let clock = Clock::get()?;
+    internal_verify_game_state(game_state, global_state, clock.unix_timestamp);
 
     // Should game be active
     require!(game_state.has_ended, ClaimRewardError::GameNotEnded);
@@ -33,6 +38,9 @@ pub fn claim_reward(ctx: Context<ClaimRewardData>) -> Result<()> {
 #[derive(Accounts)]
 pub struct ClaimRewardData<'info> {
     
+    #[account(mut)]
+    pub global_state: Account<'info, GlobalState>,
+
     #[account(mut)]
     pub game_state: Account<'info, GameState>,
 

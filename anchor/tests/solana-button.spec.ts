@@ -162,7 +162,7 @@ describe('solana-button', () => {
 
       const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
 
-      expect(!gameStateAccount.hasEnded);
+      expect(gameStateAccount.hasEnded).toBe(false);
     });
 
     it('Should not set the game state last user', async () => {
@@ -523,53 +523,15 @@ describe('solana-button', () => {
     });
   });
 
-  describe('Should end the game correctly', () => {
-    beforeAll(async () => {
-
-      // Wait until the countdown is over
-      await new Promise(resolve => setTimeout(resolve, (GAME_TIME_SEC + 1) * 1000));
-    });
-
-    it('should successfully process the verify game instruction', async () => {
-
-      const tx = await program.methods
-        .verifyGameState()
-        .accounts({
-          globalState: globalStatePda,
-          gameState: currentGameStatePda,
-        })
-        .rpc()
-
-      expect(tx).toBeTruthy();
-    });
-
-    it('Should set the game state is active to false', async () => {
-
-      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
-
-      expect(!gameStateAccount.isActive);
-    });
-
-    it('Should set the game state has ended to true', async () => {
-
-      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
-
-      expect(gameStateAccount.hasEnded);
-    });
-
-    it('Should set the global state active game id to None', async () => {
-
-      const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
-
-      expect(globalStateAccount.activeGameId).toBeNull();;
-    });
-  });
-
   describe('Should be possible for the winner to claim the reward', () => {
+
 
     let user2InitialeBalance: number;
     let vaultAccountReward: number;
     beforeAll(async () => {
+      // Wait until the countdown is over
+      await new Promise(resolve => setTimeout(resolve, (GAME_TIME_SEC + 1) * 1000));
+
       user2InitialeBalance = await provider.connection.getBalance(USER_2.publicKey);
 
       const vaultAccount = await program.account.vault.fetch(currentVaultPda);
@@ -624,6 +586,7 @@ describe('solana-button', () => {
         program.methods
           .claimReward()
           .accounts({
+            globalState: globalStatePda,
             gameState: currentGameStatePda,
             vault: currentVaultPda,
             user: USER_1.publicKey,
@@ -646,6 +609,7 @@ describe('solana-button', () => {
       const tx = await program.methods
         .claimReward()
         .accounts({
+          globalState: globalStatePda,
           gameState: currentGameStatePda,
           vault: currentVaultPda,
           user: USER_2.publicKey,
@@ -658,11 +622,6 @@ describe('solana-button', () => {
       expect(tx).toBeTruthy();
     });
 
-    it('Should have the game state has ended to true', async () => {
-
-      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
-      expect(gameStateAccount.hasEnded);
-    });
 
     it('Should increase the user balance by the vault reward', async () => {
 
@@ -674,6 +633,48 @@ describe('solana-button', () => {
 
       const vaultAccount = await program.account.vault.fetch(currentVaultPda);
       expect(vaultAccount.balance.toNumber()).toBe(0);
+    });
+  });
+
+  describe('Should end the game correctly', () => {
+    // beforeAll(async () => {
+
+    //   // Wait until the countdown is over
+    //   await new Promise(resolve => setTimeout(resolve, (GAME_TIME_SEC + 1) * 1000));
+    // });
+
+    // it('should successfully process the verify game instruction', async () => {
+
+    //   const tx = await program.methods
+    //     .verifyGameState()
+    //     .accounts({
+    //       globalState: globalStatePda,
+    //       gameState: currentGameStatePda,
+    //     })
+    //     .rpc()
+
+    //   expect(tx).toBeTruthy();
+    // });
+
+    it('Should set the game state is active to false', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+
+      expect(gameStateAccount.isActive).toBe(false);
+    });
+
+    it('Should set the game state has ended to true', async () => {
+
+      const gameStateAccount = await program.account.gameState.fetch(currentGameStatePda);
+      console.log("gameStateAccount", gameStateAccount);
+      expect(gameStateAccount.hasEnded).toBe(true);
+    });
+
+    it('Should set the global state active game id to None', async () => {
+
+      const globalStateAccount = await program.account.globalState.fetch(globalStatePda);
+
+      expect(globalStateAccount.activeGameId).toBeNull();;
     });
   });
 });
